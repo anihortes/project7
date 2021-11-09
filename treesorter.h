@@ -22,6 +22,10 @@
 // For std::vector
 #include <iterator>
 // For std::distance
+#include <tuple>
+// For std::tuple
+#include <memory>
+// For std::unique_ptr
 
 
 // treesort
@@ -32,11 +36,20 @@
 //     ???
 // Exception safety guarantee:
 //     ???
+
+template<typename Value>
+struct Node{
+    Value _data;
+    Node *_next;
+    Node(Value x) : _data(x), _next(NULL){};
+};
+
 template<typename FDIter>
 void treesort(FDIter first, FDIter last)
 {
     // Value is the type that FDIter points to
     using Value = typename std::iterator_traits<FDIter>::value_type;
+    auto p = std::make_unique<Node<Value>::value_type;
 
     // THE FOLLOWING IS DUMMY CODE. IT WILL PASS ALL TESTS, BUT IT DOES
     // NOT MEET THE REQUIREMENTS OF THE PROJECT.
