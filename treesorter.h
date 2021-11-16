@@ -1,6 +1,6 @@
-// treesorter.h  SKELETON
-// Glenn G. Chappell
-// 2021-11-08
+// treesorter.h
+// A. Harrison Owen
+// 2021-11-16
 //
 // For CS 311 Fall 2021
 // Header for function template treesort
@@ -11,19 +11,12 @@
 
 #include <iterator>
 // For std::iterator_traits
-
-// *******************************************************
-// * YOU MIGHT WANT TO GET RID OF THE FOLLOWING INCLUDES *
-// *******************************************************
-
 #include <algorithm>
 // For std::stable_sort, std::move
 #include <vector>
 // For std::vector
 #include <iterator>
 // For std::distance
-#include <tuple>
-// For std::tuple
 #include <memory>
 // For std::unique_ptr
 #include <utility>
@@ -36,12 +29,15 @@
 //     Node is empty on creation
 //      _nextRightChild, _nextLeftChild are empty on creation
 // Requirements on Types:
-//     ValueType must have a copy ctor and a (non-throwing) dctor.
+//     ValueType must have a ctor and a (non-throwing) dctor.
 // Exception safety guarantee:
 //     No-Throw Guarantee
+// Exception neutral
 template<typename ValueType>
 struct Node{
+    // data that will be stored in node
     ValueType _data;
+    // pointers to next nodes
     std::unique_ptr<Node> _nextRightChild;
     std::unique_ptr<Node> _nextLeftChild;
 
@@ -66,22 +62,31 @@ struct Node{
 // Requirements on Types:
 //     FDIter must be an iterator
 // Exception safety guarantee:
-//     No-Throw Guarantee
+//     Strong Guarantee
+// Exception neutral
 template<typename Value>
-void insert(std::unique_ptr<Node<Value>> & node, const Value & value){
-    if(node == nullptr){
-        node = std::make_unique<Node<Value>>(value);
+void insert(std::unique_ptr<Node<Value>> & head, const Value & value){
+    if(head == nullptr){
+        try {
+            head = std::make_unique<Node<Value>>(value);
+        }
+        catch(...){
+            head = nullptr;
+            throw;
+        }
         return;
     }
-    // check == condition
-    else if(!(value < node->_data) && !(node->_data < value)){
-        insert(node->_nextRightChild, value);
+
+    // recursively check where to insert node
+    // check equivalence condition
+    else if(!(value < head->_data) && !(head->_data < value)){
+        insert(head->_nextRightChild, value);
     }
-    else if(value < node->_data){
-        insert(node->_nextLeftChild, value);
+    else if(value < head->_data){
+        insert(head->_nextLeftChild, value);
     }
     else {
-        insert(node->_nextRightChild, value);
+        insert(head->_nextRightChild, value);
     }
 }
 
@@ -94,6 +99,7 @@ void insert(std::unique_ptr<Node<Value>> & node, const Value & value){
 //     FDIter must be an iterator
 // Exception safety guarantee:
 //     No-Throw Guarantee
+// Exception neutral
 template<typename Value, typename FDIter>
 void traverse(const std::unique_ptr<Node<Value>> & head, FDIter & item){
     if(head == nullptr){
@@ -114,27 +120,34 @@ void traverse(const std::unique_ptr<Node<Value>> & head, FDIter & item){
 // Exception safety guarantee:
 //     Exception neutral
 template<typename FDIter>
-void treesort(FDIter first, FDIter last)
+void treesort(FDIter & first, FDIter & last)
 {
-    // Value is the type that FDIter points to
+    // Value is the data type that FDIter first/last points to
     using Value = typename std::iterator_traits<FDIter>::value_type;
-    //auto p = std::make_unique<Node<Value>>(*first, first);
+
+    // head of binary tree
     std::unique_ptr<Node<Value>> head;
     FDIter iter = first;
+
+    // fill binary tree
     while(iter != last) {
         insert(head, *iter);
         iter++;
     }
+
+    // copy sorted data back to original array
     traverse(head, first);
 
 
 
-    // THE FOLLOWING IS DUMMY CODE. IT WILL PASS ALL TESTS, BUT IT DOES
-    // NOT MEET THE REQUIREMENTS OF THE PROJECT.
+    // i was not sure if i should delete this or not,
+    // so i kept it in just in case
+    /*
     std::vector<Value> buff(std::distance(first, last));
     std::move(first, last, buff.begin());
     std::stable_sort(buff.begin(), buff.end());
     std::move(buff.begin(), buff.end(), first);
+    */
 }
 
 #endif //#ifndef FILE_TREESORTER_H_INCLUDED
